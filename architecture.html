@@ -12,15 +12,233 @@
   </header>
   
   <main class="p-8 max-w-4xl mx-auto">
-    <section>
-      <h2 class="text-2xl font-bold mb-4">Components Used</h2>
+    <article>
+      <h2 class="text-2xl font-bold mb-4">Autonomous Drone-to-Drone Docking System: System Architecture</h2>
+
+      <h3 class="text-xl font-bold mt-6">Overview</h3>
+      <p>
+        This document outlines the system architecture for an autonomous drone-to-drone docking system that uses IR LEDs with a 38kHz carrier frequency for position detection. The system enables a landing drone to accurately dock with a target drone in flight using a combination of hardware and software components working together.
+      </p>
+
+      <h3 class="text-xl font-bold mt-6">System Components</h3>
+      <h4 class="text-lg font-bold mt-4">Hardware Components</h4>
+      <ol class="list-decimal ml-6">
+        <li>
+          <strong>Target Drone (Docking Platform)</strong>
+          <ul class="list-disc ml-6">
+            <li>Ardupilot Flight Controller</li>
+            <li>ESP32 Microcontroller</li>
+            <li>4 IR LEDs with 38kHz carrier frequency modulation</li>
+            <li>Power management circuitry for IR LEDs</li>
+            <li>MAVLink communication interface</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Landing Drone</strong>
+          <ul class="list-disc ml-6">
+            <li>Ardupilot Flight Controller</li>
+            <li>ESP32 Microcontroller</li>
+            <li>IR Receiver(s) tuned to 38kHz</li>
+            <li>MAVLink communication interface</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h4 class="text-lg font-bold mt-4">Software Components</h4>
+      <ol class="list-decimal ml-6">
+        <li>
+          <strong>Target Drone Software</strong>
+          <ul class="list-disc ml-6">
+            <li>ESP32 firmware for IR LED control</li>
+            <li>ESPNOW communication module</li>
+            <li>MAVLink interface to flight controller</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Landing Drone Software</strong>
+          <ul class="list-disc ml-6">
+            <li>ESP32 firmware for IR signal processing</li>
+            <li>Position calculation algorithm</li>
+            <li>ESPNOW communication module</li>
+            <li>MAVLink interface to flight controller</li>
+            <li>Lua script with PD controller for position correction</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h3 class="text-xl font-bold mt-6">Communication Architecture</h3>
+      <h4 class="text-lg font-bold mt-4">IR Communication</h4>
+      <p>
+        <strong>Purpose</strong>: Precise position detection between drones<br>
+        <strong>Implementation</strong>: 4 IR LEDs on the target drone transmit at a 38kHz carrier frequency; IR receiver(s) on the landing drone detect signals and calculate position based on signal strength and pattern.
+      </p>
+
+      <h4 class="text-lg font-bold mt-4">ESPNOW Communication</h4>
+      <p>
+        <strong>Purpose</strong>: Direct drone-to-drone data exchange<br>
+        <strong>Implementation</strong>: Bidirectional communication between ESP32 modules; low latency (<10ms) and sufficient range (up to 100m line-of-sight).
+      </p>
+
+      <h4 class="text-lg font-bold mt-4">MAVLink Communication</h4>
+      <p>
+        <strong>Purpose</strong>: Interface between ESP32 and flight controller<br>
+        <strong>Implementation</strong>: Serial UART connection using the standard MAVLink protocol to send position correction commands.
+      </p>
+
+      <h3 class="text-xl font-bold mt-6">Detailed Architecture</h3>
+      <pre class="bg-gray-800 p-4 rounded text-sm overflow-auto">
+┌─────────────────────────────────────────────────────────┐
+│                     Target Drone                        │
+│                                                         │
+│  ┌───────────────┐       ┌───────────────────────────┐  │
+│  │               │       │                           │  │
+│  │  Ardupilot    │◄─────►│  ESP32 Microcontroller    │  │
+│  │  Flight       │ UART/ │                           │  │
+│  │  Controller   │MAVLink│  ┌─────────────────────┐  │  │
+│  │               │       │  │ IR LED Controller   │  │  │
+│  └───────────────┘       │  │ (38kHz modulation)  │  │  │
+│                          │  └─────────┬───────────┘  │  │
+│                          │            │              │  │
+│                          │  ┌─────────▼───────────┐  │  │
+│                          │  │ ESPNOW Communication│  │  │
+│                          │  │ Module              │  │  │
+│                          │  └─────────────────────┘  │  │
+│                          │                           │  │
+│                          └───────────────────────────┘  │
+│                                      │                  │
+│  ┌───────────────┐                   │                  │
+│  │ IR LED 1      │◄─────────────────┐│                  │
+│  └───────────────┘                  ││                  │
+│                                     ││                  │
+│  ┌───────────────┐                  ││                  │
+│  │ IR LED 2      │◄────────────────┐││                  │
+│  └───────────────┘                 │││                  │
+│                                    │││                  │
+│  ┌───────────────┐                 │││                  │
+│  │ IR LED 3      │◄───────────────┐│││                  │
+│  └───────────────┘                ││││                  │
+│                                   ││││                  │
+│  ┌───────────────┐                ││││                  │
+│  │ IR LED 4      │◄──────────────┘│││                  │
+│  └───────────────┘                 ││                  │
+│                                     │                  │
+└─────────────────────────────────────┼──────────────────┘
+                                      │
+                                      │ ESPNOW
+                                      │ (2.4GHz)
+                                      │
+┌─────────────────────────────────────┼──────────────────┐
+│                     Landing Drone                       │
+│                                                         │
+│  ┌───────────────┐       ┌───────────▼───────────────┐  │
+│  │               │       │                           │  │
+│  │  Ardupilot    │◄─────►│  ESP32 Microcontroller    │  │
+│  │  Flight       │ UART/ │                           │  │
+│  │  Controller   │MAVLink│  ┌─────────────────────┐  │  │
+│  │  (with Lua    │       │  │ IR Signal Processor │  │  │
+│  │   script)     │       │  │ & Position Detector │  │  │
+│  │               │       │  └─────────┬───────────┘  │  │
+│  └───────────────┘       │            │              │  │
+│                          │  ┌─────────▼───────────┐  │  │
+│                          │  │ ESPNOW Communication│  │  │
+│                          │  │ Module              │  │  │
+│                          │  └─────────────────────┘  │  │
+│                          │                           │  │
+│                          └───────────────────────────┘  │
+│                                      ▲                  │
+│  ┌───────────────┐                   │                  │
+│  │ IR Receiver(s)│───────────────────┘                  │
+│  └───────────────┘                                      │
+└─────────────────────────────────────────────────────────┘
+      </pre>
+
+      <h3 class="text-xl font-bold mt-6">IR LED Positioning System</h3>
+      <p>
+        The 4 IR LEDs on the target drone are arranged in a specific pattern to enable accurate position detection. Each LED transmits a unique identification pattern modulated on a 38kHz carrier frequency, allowing the landing drone to identify which LED it is detecting.
+      </p>
+
+      <h3 class="text-xl font-bold mt-6">Position Detection Algorithm</h3>
+      <ol class="list-decimal ml-6">
+        <li>Detect IR signals from the target drone's LEDs.</li>
+        <li>Identify which LEDs are visible based on their unique patterns.</li>
+        <li>Calculate relative position based on visible LED pattern, signal strength, and the known geometric arrangement.</li>
+        <li>Apply filtering (Kalman filter) to smooth the position estimates.</li>
+        <li>Calculate position correction commands.</li>
+      </ol>
+
+      <h3 class="text-xl font-bold mt-6">Data Flow</h3>
+      <h4 class="text-lg font-bold mt-4">Target Drone Data Flow</h4>
+      <ol class="list-decimal ml-6">
+        <li>ESP32 generates a 38kHz carrier signal for IR LEDs.</li>
+        <li>Each LED transmits its unique identification pattern.</li>
+        <li>ESP32 may optionally transmit additional status data via ESPNOW.</li>
+        <li>The flight controller maintains stable flight position.</li>
+      </ol>
+
+      <h4 class="text-lg font-bold mt-4">Landing Drone Data Flow</h4>
+      <ol class="list-decimal ml-6">
+        <li>IR receiver detects signals from the target drone's IR LEDs.</li>
+        <li>ESP32 processes IR signals to determine relative position.</li>
+        <li>Position data may be enhanced with ESPNOW communication.</li>
+        <li>ESP32 sends position correction data to the flight controller via MAVLink.</li>
+        <li>The Lua script on the flight controller implements the PD controller.</li>
+        <li>The PD controller generates control commands based on position error.</li>
+        <li>The flight controller executes the position correction maneuvers.</li>
+      </ol>
+
+      <h3 class="text-xl font-bold mt-6">PD Controller Design</h3>
+      <p>
+        The Lua script uses a PD controller that adjusts its aggressiveness based on the altitude difference between the drones:
+      </p>
+      <pre class="bg-gray-800 p-4 rounded text-sm overflow-auto">
+function update_pd_controller(position_error, altitude_difference)
+    -- Calculate scaling factor based on altitude difference
+    local scale_factor = calculate_scale_factor(altitude_difference)
+    
+    -- Apply proportional term
+    local p_term = Kp * position_error * scale_factor
+    
+    -- Apply derivative term
+    local d_term = Kd * (position_error - previous_error) * scale_factor
+    
+    -- Calculate control output
+    local control_output = p_term + d_term
+    
+    -- Store current error for next iteration
+    previous_error = position_error
+    
+    return control_output
+end
+
+function calculate_scale_factor(altitude_difference)
+    return math.max(0.1, math.min(1.0, altitude_difference / max_altitude_difference))
+end
+      </pre>
+
+      <h3 class="text-xl font-bold mt-6">Implementation Considerations</h3>
       <ul class="list-disc ml-6">
-        <li>ESP32 Microcontrollers</li>
-        <li>Ardupilot Flight Controllers</li>
-        <li>IR LEDs (38kHz)</li>
-        <li>MAVLink and ESPNOW communication protocols</li>
+        <li>IR LEDs require sufficient current (&gt;100mA each) for reliable detection.</li>
+        <li>Transistor drivers are recommended for IR LEDs.</li>
+        <li>The power budget must account for the additional ESP32 and IR system.</li>
+        <li>ESP32 dual-core architecture allows parallel processing of IR signal processing and communication.</li>
+        <li>Total system latency should be &lt;100ms for stable control.</li>
+        <li>Failure modes include loss of IR signal or ESPNOW communication, which must be handled gracefully.</li>
       </ul>
-    </section>
+
+      <h3 class="text-xl font-bold mt-6">Testing Strategy</h3>
+      <ol class="list-decimal ml-6">
+        <li>Component testing: Verify IR LED transmission and detection, ESPNOW communication, and position calculation accuracy.</li>
+        <li>Integration testing: Test combined IR and ESPNOW communication between drones and validate the ESP32 to flight controller interface.</li>
+        <li>System testing: Conduct static and dynamic docking tests, including robustness against interference.</li>
+      </ol>
+
+      <h3 class="text-xl font-bold mt-6">Future Enhancements</h3>
+      <ol class="list-decimal ml-6">
+        <li>Extended Range: Higher power IR LEDs and directional emitters for increased detection range.</li>
+        <li>Improved Accuracy: Incorporate additional IR LEDs and other sensor integrations (visual, ultrasonic) for precise positioning.</li>
+        <li>Advanced Control: Explore machine learning-based adaptive control and predictive positioning algorithms.</li>
+      </ol>
+    </article>
     <a href="index.html" class="btn mt-6 inline-block">← Back to Home</a>
   </main>
   
