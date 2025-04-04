@@ -70,7 +70,7 @@
       <h4 class="text-lg font-bold mt-4">IR Communication</h4>
       <p>
         <strong>Purpose</strong>: Precise position detection between drones<br>
-        <strong>Implementation</strong>: 4 IR LEDs on the target drone transmit at a 38kHz carrier frequency; IR receiver(s) on the landing drone detect signals and calculate position based on signal strength and pattern.
+        <strong>Implementation</strong>: 4 IR LEDs on the target drone transmit at a 38kHz carrier frequency; IR receiver(s) on the landing drone detect signals and calculate position based on pattern.
       </p>
 
       <h4 class="text-lg font-bold mt-4">ESPNOW Communication</h4>
@@ -161,7 +161,7 @@
       <ol class="list-decimal ml-6">
         <li>Detect IR signals from the target drone's LEDs.</li>
         <li>Identify which LEDs are visible based on their unique patterns.</li>
-        <li>Calculate relative position based on visible LED pattern, signal strength, and the known geometric arrangement.</li>
+        <li>Calculate relative position based on visible LED pattern and the known geometric arrangement.</li>
         <li>Apply filtering (Kalman filter) to smooth the position estimates.</li>
         <li>Calculate position correction commands.</li>
       </ol>
@@ -217,7 +217,7 @@ end
 
       <h3 class="text-xl font-bold mt-6">Implementation Considerations</h3>
       <ul class="list-disc ml-6">
-        <li>IR LEDs require sufficient current (&gt;100mA each) for reliable detection.</li>
+        <li>IR LEDs require sufficient current (&gt;>700mA each) for reliable detection.</li>
         <li>Transistor drivers are recommended for IR LEDs.</li>
         <li>The power budget must account for the additional ESP32 and IR system.</li>
         <li>ESP32 dual-core architecture allows parallel processing of IR signal processing and communication.</li>
