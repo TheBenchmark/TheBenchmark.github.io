@@ -33,13 +33,13 @@
       <p class="mb-4">
         The autonomous drone-to-drone docking system enables a landing drone to accurately dock with a target drone in flight. 
         Using infrared (IR) LEDs with a 38kHz carrier frequency for precise positioning, ESP32 microcontrollers for signal processing, 
-        and Ardupilot flight controllers for drone control, the system integrates hardware and software components for reliable docking.
+        and Ardupilot flight controllers for drone control, the system integrates both hardware and software components for reliable docking.
       </p>
       <p class="mb-4">
         Key components include:
       </p>
       <ul class="list-disc ml-6 mb-4">
-        <li>Target Drone with 4 IR LEDs</li>
+        <li>Target Drone with a multiplexed IR LED array</li>
         <li>Landing Drone with IR receivers</li>
         <li>ESP32 microcontrollers</li>
         <li>Ardupilot flight controllers</li>
@@ -57,11 +57,11 @@
       <ul class="list-disc ml-6 mb-4">
         <li>Ardupilot-compatible flight controller (Pixhawk, Cube, etc.)</li>
         <li>ESP32 development board</li>
+        <li>CD4051B Multiplexer for IR LED control</li>
         <li>4 IR LEDs (940nm wavelength recommended)</li>
-        <li>4 NPN transistors (2N2222 or similar) for LED driving</li>
-        <li>4 current-limiting resistors</li>
+        <li>Transistor drivers and current-limiting resistors for each IR LED</li>
         <li>Connecting wires</li>
-        <li>Power supply (sufficient current for IR LEDs)</li>
+        <li>Power supply (capable of providing sufficient current for IR LEDs)</li>
       </ul>
       <h3 class="text-xl font-bold mt-4">Landing Drone Components:</h3>
       <ul class="list-disc ml-6 mb-4">
@@ -84,44 +84,67 @@
     <!-- Hardware Setup -->
     <section id="hardware-setup" class="mb-8">
       <h2 class="text-2xl font-bold mb-4">Hardware Setup</h2>
+      
+      <!-- Target Drone Setup -->
       <h3 class="text-xl font-bold mt-4">Target Drone Setup:</h3>
-      <h4 class="text-lg font-bold mt-2">IR LED Circuit:</h4>
-      <ol class="list-decimal ml-6 mb-4">
-        <li>
-          Connect each IR LED to an ESP32 GPIO pin through a transistor driver:
-          <pre class="bg-gray-800 p-2 rounded mt-2 text-sm">
-ESP32 GPIO Pin → 1kΩ Resistor → Transistor Base
-Transistor Collector → IR LED → Current Limiting Resistor → VCC (3.3V or 5V)
-Transistor Emitter → GND
-          </pre>
-        </li>
-        <li>
-          Use the following GPIO pins for the IR LEDs:
-          <ul class="list-disc ml-6">
-            <li>IR LED 1 (Front-Left): GPIO 27</li>
-            <li>IR LED 2 (Front-Right): GPIO 26</li>
-            <li>IR LED 3 (Rear-Left): GPIO 25</li>
-            <li>IR LED 4 (Rear-Right): GPIO 33</li>
-          </ul>
-        </li>
-        <li>
-          Mount the IR LEDs on the drone as shown below:
-          <pre class="bg-gray-800 p-2 rounded mt-2 text-sm">
-    Front of Drone
-        ▲
-        │
-    ┌───┼───┐
-    │   │   │
-    │ 1 │ 2 │
-    │   │   │
-    ├───┼───┤
-    │   │   │
-    │ 3 │ 4 │
-    │   │   │
-    └───┴───┘
-          </pre>
-        </li>
-      </ol>
+      
+      <!-- Updated IR LED Circuit Description -->
+      <h4 class="text-lg font-bold mt-2">IR LED Circuit (Multiplexer-Based):</h4>
+      <p class="mb-4">
+        Instead of driving each IR LED with its own GPIO, the target drone uses a CD4051B multiplexer to control the IR LEDs. 
+        In this configuration, only two GPIO pins (A and B) are used to select which IR LED is active, while the multiplexer’s C pin is tied to ground.
+      </p>
+      <p class="mb-4 font-semibold">Multiplexer Truth Table (C tied to Ground):</p>
+      <table class="table-auto border-collapse border border-gray-600 mb-4">
+        <thead>
+          <tr>
+            <th class="border border-gray-600 px-2 py-1">A (GPIO)</th>
+            <th class="border border-gray-600 px-2 py-1">B (GPIO)</th>
+            <th class="border border-gray-600 px-2 py-1">Selected IR LED (Channel)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border border-gray-600 px-2 py-1">0</td>
+            <td class="border border-gray-600 px-2 py-1">0</td>
+            <td class="border border-gray-600 px-2 py-1">IR LED 1 (Channel 0)</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-600 px-2 py-1">0</td>
+            <td class="border border-gray-600 px-2 py-1">1</td>
+            <td class="border border-gray-600 px-2 py-1">IR LED 2 (Channel 1)</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-600 px-2 py-1">1</td>
+            <td class="border border-gray-600 px-2 py-1">0</td>
+            <td class="border border-gray-600 px-2 py-1">IR LED 3 (Channel 2)</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-600 px-2 py-1">1</td>
+            <td class="border border-gray-600 px-2 py-1">1</td>
+            <td class="border border-gray-600 px-2 py-1">IR LED 4 (Channel 3)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="mb-4">
+        <strong>Connection Diagram Example:</strong>
+      </p>
+      <pre class="bg-gray-800 p-2 rounded text-sm mb-4">
+           +------------------+
+           |    CD4051B       |
+           |                  |
+GPIO (A)---| A           CH0|--- IR LED 1
+GPIO (B)---| B           CH1|--- IR LED 2
+           | C (GND)      CH2|--- IR LED 3
+           | INH (Low)    CH3|--- IR LED 4
+           |                  |
+           +------------------+
+      </pre>
+      <p>
+        Ensure that the multiplexer output is properly interfaced with the IR LED driving circuitry (using transistor drivers if needed) and that the INH pin is held low to enable channel selection.
+      </p>
+      
+      <!-- ESP32 to Flight Controller Connection for Target Drone -->
       <h4 class="text-lg font-bold mt-4">ESP32 to Flight Controller Connection:</h4>
       <ol class="list-decimal ml-6 mb-4">
         <li>
@@ -133,8 +156,10 @@ Transistor Emitter → GND
             <li>ESP32 VIN → Flight Controller 5V (if applicable)</li>
           </ul>
         </li>
-        <li>Power the ESP32 from the drone's power system (use a separate BEC if necessary).</li>
+        <li>Power the ESP32 from the drone's power system (using a separate BEC if necessary).</li>
       </ol>
+      
+      <!-- Landing Drone Setup -->
       <h3 class="text-xl font-bold mt-4">Landing Drone Setup:</h3>
       <h4 class="text-lg font-bold mt-2">IR Receiver Circuit:</h4>
       <ol class="list-decimal ml-6 mb-4">
@@ -163,7 +188,8 @@ Transistor Emitter → GND
       <h4 class="text-lg font-bold mt-2">Target Drone ESP32:</h4>
       <ol class="list-decimal ml-6 mb-4">
         <li>
-          Install the Arduino IDE and ESP32 board support (follow the <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html" target="_blank" class="text-blue-400 hover:underline">official guide</a>).
+          Install the Arduino IDE and ESP32 board support (follow the 
+          <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html" target="_blank" class="text-blue-400 hover:underline">official guide</a>).
         </li>
         <li>
           Install required libraries:
@@ -236,7 +262,7 @@ Transistor Emitter → GND
         <li>
           IR LED Testing:
           <ul class="list-disc ml-6">
-            <li>Verify IR LED emissions with a smartphone camera and, if available, an oscilloscope.</li>
+            <li>Verify IR LED emissions using a smartphone camera and, if available, an oscilloscope.</li>
           </ul>
         </li>
         <li>
