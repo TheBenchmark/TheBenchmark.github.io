@@ -3,43 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drone Docking Project</title>
+  <title>Drone Docking System - Home</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-900 text-white">
-  <header class="py-16 text-center bg-gradient-to-r from-blue-900 to-purple-900">
-    <h1 class="text-4xl font-bold">Autonomous Drone Docking System</h1>
-    <p class="mt-4 text-lg">(IR-based autonomous positioning for drone docking)</p>
-<nav class="mt-6 flex flex-col items-center gap-2">
-  <a href="architecture.html" class="btn block">System Architecture</a>
-  <a href="implementation.html" class="btn block">Implementation Guide</a>
-  <a href="code.html" class="btn block">Code Components</a>
-</nav>
-
+  <!-- Header / Navigation -->
+  <header class="bg-gray-800 py-4">
+    <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-bold">Drone Docking System</a>
+      <nav class="space-x-4">
+        <a href="architecture.html" class="text-blue-400 hover:underline">System Architecture</a>
+        <a href="implementation.html" class="text-blue-400 hover:underline">Implementation Guide</a>
+        <a href="code.html" class="text-blue-400 hover:underline">Code Components</a>
+      </nav>
+    </div>
   </header>
 
-  <main class="p-8 max-w-4xl mx-auto">
-    <section>
-  <h2 class="text-2xl font-bold mb-4">Project Overview</h2>
-  <p class="mb-4">
-    This project demonstrates an innovative autonomous drone-to-drone docking system utilizing infrared (IR) LED technology for precise positional control during flight. The primary objective is to enable a drone to autonomously dock onto another drone mid-air, with exceptional accuracy and reliability.
-  </p>
-  <p class="mb-4">
-    At the core of the system, infrared LEDs operating at a 38kHz carrier frequency provide distinctive identification patterns for orientation and positioning. The target drone is equipped with multiple IR LEDs, each transmitting unique patterns. The landing drone employs IR sensors to detect and interpret these patterns, using an ESP32 microcontroller that processes signals with advanced filtering techniques like Kalman filters.
-  </p>
-  <p class="mb-4">
-    Communication between drones and their Ardupilot flight controllers is achieved through MAVLink and ESP-NOW protocols, enabling real-time data exchange and drone-to-drone interactions. A custom-developed adaptive Proportional-Derivative (PD) controller, implemented in Lua scripting language within the Ardupilot ecosystem, dynamically adjusts the docking maneuvers based on altitude differences and real-time position errors, ensuring smooth and precise docking operations.
-  </p>
-  <p>
-    This autonomous docking system lays a solid foundation for advanced UAV applications, including autonomous drone swarms, aerial refueling, precision agriculture, and automated inspection tasks.
-  </p>
-</section>
-
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <section class="text-center">
+      <h1 class="text-4xl font-bold mb-4">Welcome to the Drone Docking System Project</h1>
+      <p class="mb-4">
+        Explore our autonomous drone-to-drone docking system that leverages IR LEDs, ESP32 microcontrollers, and advanced control algorithms.
+      </p>
+      <p>
+        Use the navigation above to view the system architecture, implementation details, and code components.
+      </p>
+    </section>
   </main>
 
-  <footer class="text-center p-4 bg-gray-800">
-    &copy; 2025 Autonomous Drone Docking System
+  <!-- Footer -->
+  <footer class="bg-gray-800 py-4">
+    <div class="max-w-4xl mx-auto px-4 text-center text-sm">
+      &copy; 2025 Drone Docking System. Last updated: [Date]
+    </div>
   </footer>
 </body>
 </html>
