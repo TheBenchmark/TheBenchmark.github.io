@@ -2,42 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Code Components - Drone Docking Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Components - Drone Docking System</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-900 text-white">
-  <header class="text-center py-8 bg-green-800">
-    <h1 class="text-3xl font-bold">Code Components</h1>
+  <!-- Header / Navigation -->
+  <header class="bg-gray-800 py-4">
+    <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-bold">Drone Docking System</a>
+      <nav class="space-x-4">
+        <a href="architecture.html" class="text-blue-400 hover:underline">System Architecture</a>
+        <a href="implementation.html" class="text-blue-400 hover:underline">Implementation Guide</a>
+        <a href="code.html" class="text-blue-400 hover:underline">Code Components</a>
+      </nav>
+    </div>
   </header>
   
-  <main class="p-8 max-w-4xl mx-auto">
-    <section>
-      <h2 class="text-2xl font-bold mb-4">Current Code Links</h2>
-      <ul class="list-disc ml-6 space-y-2">
-  <li>
-    IR LED Control Code (.ino):
-    <a href="./code/ir_led_control_system.ino" download class="text-blue-400 hover:underline">Download</a> | 
-    <a href="https://github.com/TheBenchmark/TheBenchmark.github.io/blob/main/code/ir_led_control_system.ino" target="_blank" class="text-blue-400 hover:underline">View</a>
-  </li>
-  <li>
-    Position Processing Code (.ino):
-    <a href="./code/esp32_position_processing.ino" download class="text-blue-400 hover:underline">Download</a> | 
-    <a href="https://github.com/TheBenchmark/TheBenchmark.github.io/blob/main/code/esp32_position_processing.ino" target="_blank" class="text-blue-400 hover:underline">View</a>
-  </li>
-  <li>
-    Lua PD Controller Script (.lua):
-    <a href="./code/drone_docking.lua" download class="text-blue-400 hover:underline">Download</a> | 
-    <a href="https://github.com/TheBenchmark/TheBenchmark.github.io/blob/main/code/drone_docking.lua" target="_blank" class="text-blue-400 hover:underline">View</a>
-  </li>
-</ul>
-
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-4">Code Components</h1>
+    <section class="mb-6">
+      <h2 class="text-2xl font-bold mb-4">Download and View Files</h2>
+      <ul class="space-y-4">
+        <li>
+          <span class="font-semibold">IR LED Control Code (.ino)</span>
+          <div class="mt-1">
+            <a href="./code/ir_led_control_system.ino" target="_blank" class="text-blue-400 hover:underline">View</a> |
+            <a href="./code/ir_led_control_system.ino" download class="text-green-400 hover:underline">Download</a>
+          </div>
+        </li>
+        <li>
+          <span class="font-semibold">Position Processing Code (.ino)</span>
+          <div class="mt-1">
+            <a href="./code/esp32_position_processing.ino" target="_blank" class="text-blue-400 hover:underline">View</a> |
+            <a href="./code/esp32_position_processing.ino" download class="text-green-400 hover:underline">Download</a>
+          </div>
+        </li>
+        <li>
+          <span class="font-semibold">Lua PD Controller Script (.lua)</span>
+          <div class="mt-1">
+            <a href="./code/drone_docking.lua" target="_blank" class="text-blue-400 hover:underline">View</a> |
+            <a href="./code/drone_docking.lua" download class="text-green-400 hover:underline">Download</a>
+          </div>
+        </li>
+      </ul>
     </section>
     <a href="index.html" class="btn mt-6 inline-block">← Back to Home</a>
   </main>
   
-  <footer class="text-center p-4 bg-gray-800">
-    &copy; 2025 Autonomous Drone Docking System
+  <!-- Footer -->
+  <footer class="bg-gray-800 py-4">
+    <div class="max-w-4xl mx-auto px-4 text-center text-sm">
+      &copy; 2025 Drone Docking System. Last updated: [Date]
+    </div>
   </footer>
 </body>
 </html>
