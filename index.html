@@ -21,11 +21,21 @@
 
   <main class="p-8 max-w-4xl mx-auto">
     <section>
-      <h2 class="text-2xl font-bold mb-4">Project Overview</h2>
-      <p>
-        This project demonstrates an IR LED-based drone docking system using ESP32 and Ardupilot flight controllers with real-time position processing.
-      </p>
-    </section>
+  <h2 class="text-2xl font-bold mb-4">Project Overview</h2>
+  <p class="mb-4">
+    This project demonstrates an innovative autonomous drone-to-drone docking system utilizing infrared (IR) LED technology for precise positional control during flight. The primary objective is to enable a drone to autonomously dock onto another drone mid-air, with exceptional accuracy and reliability.
+  </p>
+  <p class="mb-4">
+    At the core of the system, infrared LEDs operating at a 38kHz carrier frequency provide distinctive identification patterns for orientation and positioning. The target drone is equipped with multiple IR LEDs, each transmitting unique patterns. The landing drone employs IR sensors to detect and interpret these patterns, using an ESP32 microcontroller that processes signals with advanced filtering techniques like Kalman filters.
+  </p>
+  <p class="mb-4">
+    Communication between drones and their Ardupilot flight controllers is achieved through MAVLink and ESP-NOW protocols, enabling real-time data exchange and drone-to-drone interactions. A custom-developed adaptive Proportional-Derivative (PD) controller, implemented in Lua scripting language within the Ardupilot ecosystem, dynamically adjusts the docking maneuvers based on altitude differences and real-time position errors, ensuring smooth and precise docking operations.
+  </p>
+  <p>
+    This autonomous docking system lays a solid foundation for advanced UAV applications, including autonomous drone swarms, aerial refueling, precision agriculture, and automated inspection tasks.
+  </p>
+</section>
+
   </main>
 
   <footer class="text-center p-4 bg-gray-800">
