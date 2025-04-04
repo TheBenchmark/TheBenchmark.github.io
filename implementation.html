@@ -12,13 +12,320 @@
   </header>
   
   <main class="p-8 max-w-4xl mx-auto">
-    <h2 class="text-2xl font-bold mb-4">Setup Steps</h2>
-    <ol class="list-decimal ml-6">
-      <li>Prepare ESP32 boards and connect IR LEDs.</li>
-      <li>Install software libraries (ESP-NOW, MAVLink).</li>
-      <li>Program microcontrollers via Arduino IDE.</li>
-      <li>Integrate with Ardupilot flight controllers.</li>
-    </ol>
+    <!-- Table of Contents -->
+    <nav class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Table of Contents</h2>
+      <ol class="list-decimal ml-6">
+        <li><a href="#system-overview" class="text-blue-400 hover:underline">System Overview</a></li>
+        <li><a href="#hardware-requirements" class="text-blue-400 hover:underline">Hardware Requirements</a></li>
+        <li><a href="#hardware-setup" class="text-blue-400 hover:underline">Hardware Setup</a></li>
+        <li><a href="#software-installation" class="text-blue-400 hover:underline">Software Installation</a></li>
+        <li><a href="#configuration" class="text-blue-400 hover:underline">Configuration</a></li>
+        <li><a href="#testing-procedures" class="text-blue-400 hover:underline">Testing Procedures</a></li>
+        <li><a href="#troubleshooting" class="text-blue-400 hover:underline">Troubleshooting</a></li>
+        <li><a href="#performance-optimization" class="text-blue-400 hover:underline">Performance Optimization</a></li>
+      </ol>
+    </nav>
+    
+    <!-- System Overview -->
+    <section id="system-overview" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">System Overview</h2>
+      <p class="mb-4">
+        The autonomous drone-to-drone docking system enables a landing drone to accurately dock with a target drone in flight. 
+        Using infrared (IR) LEDs with a 38kHz carrier frequency for precise positioning, ESP32 microcontrollers for signal processing, 
+        and Ardupilot flight controllers for drone control, the system integrates hardware and software components for reliable docking.
+      </p>
+      <p class="mb-4">
+        Key components include:
+      </p>
+      <ul class="list-disc ml-6 mb-4">
+        <li>Target Drone with 4 IR LEDs</li>
+        <li>Landing Drone with IR receivers</li>
+        <li>ESP32 microcontrollers</li>
+        <li>Ardupilot flight controllers</li>
+        <li>Lua script implementing a PD controller</li>
+      </ul>
+      <p>
+        Communication is achieved via IR signals, ESPNOW, and MAVLink to ensure real-time data exchange and coordinated control.
+      </p>
+    </section>
+    
+    <!-- Hardware Requirements -->
+    <section id="hardware-requirements" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Hardware Requirements</h2>
+      <h3 class="text-xl font-bold mt-4">Target Drone Components:</h3>
+      <ul class="list-disc ml-6 mb-4">
+        <li>Ardupilot-compatible flight controller (Pixhawk, Cube, etc.)</li>
+        <li>ESP32 development board</li>
+        <li>4 IR LEDs (940nm wavelength recommended)</li>
+        <li>4 NPN transistors (2N2222 or similar) for LED driving</li>
+        <li>4 current-limiting resistors</li>
+        <li>Connecting wires</li>
+        <li>Power supply (sufficient current for IR LEDs)</li>
+      </ul>
+      <h3 class="text-xl font-bold mt-4">Landing Drone Components:</h3>
+      <ul class="list-disc ml-6 mb-4">
+        <li>Ardupilot-compatible flight controller (Pixhawk, Cube, etc.)</li>
+        <li>ESP32 development board</li>
+        <li>IR receiver module(s) tuned to 38kHz (e.g., TSOP38238)</li>
+        <li>Connecting wires</li>
+        <li>SD card for Lua script storage (if required)</li>
+      </ul>
+      <h3 class="text-xl font-bold mt-4">Tools Required:</h3>
+      <ul class="list-disc ml-6 mb-4">
+        <li>Soldering iron and solder</li>
+        <li>Wire cutters/strippers</li>
+        <li>Multimeter</li>
+        <li>USB cables for programming</li>
+        <li>Computer with Arduino IDE and Mission Planner/QGroundControl</li>
+      </ul>
+    </section>
+    
+    <!-- Hardware Setup -->
+    <section id="hardware-setup" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Hardware Setup</h2>
+      <h3 class="text-xl font-bold mt-4">Target Drone Setup:</h3>
+      <h4 class="text-lg font-bold mt-2">IR LED Circuit:</h4>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>
+          Connect each IR LED to an ESP32 GPIO pin through a transistor driver:
+          <pre class="bg-gray-800 p-2 rounded mt-2 text-sm">
+ESP32 GPIO Pin → 1kΩ Resistor → Transistor Base
+Transistor Collector → IR LED → Current Limiting Resistor → VCC (3.3V or 5V)
+Transistor Emitter → GND
+          </pre>
+        </li>
+        <li>
+          Use the following GPIO pins for the IR LEDs:
+          <ul class="list-disc ml-6">
+            <li>IR LED 1 (Front-Left): GPIO 27</li>
+            <li>IR LED 2 (Front-Right): GPIO 26</li>
+            <li>IR LED 3 (Rear-Left): GPIO 25</li>
+            <li>IR LED 4 (Rear-Right): GPIO 33</li>
+          </ul>
+        </li>
+        <li>
+          Mount the IR LEDs on the drone as shown below:
+          <pre class="bg-gray-800 p-2 rounded mt-2 text-sm">
+    Front of Drone
+        ▲
+        │
+    ┌───┼───┐
+    │   │   │
+    │ 1 │ 2 │
+    │   │   │
+    ├───┼───┤
+    │   │   │
+    │ 3 │ 4 │
+    │   │   │
+    └───┴───┘
+          </pre>
+        </li>
+      </ol>
+      <h4 class="text-lg font-bold mt-4">ESP32 to Flight Controller Connection:</h4>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>
+          Connect ESP32 to flight controller's TELEM2 port:
+          <ul class="list-disc ml-6">
+            <li>ESP32 TX (GPIO 17) → Flight Controller RX</li>
+            <li>ESP32 RX (GPIO 16) → Flight Controller TX</li>
+            <li>ESP32 GND → Flight Controller GND</li>
+            <li>ESP32 VIN → Flight Controller 5V (if applicable)</li>
+          </ul>
+        </li>
+        <li>Power the ESP32 from the drone's power system (use a separate BEC if necessary).</li>
+      </ol>
+      <h3 class="text-xl font-bold mt-4">Landing Drone Setup:</h3>
+      <h4 class="text-lg font-bold mt-2">IR Receiver Circuit:</h4>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>
+          Connect the IR receiver to the ESP32:
+          <ul class="list-disc ml-6">
+            <li>IR Receiver VCC → ESP32 3.3V</li>
+            <li>IR Receiver GND → ESP32 GND</li>
+            <li>IR Receiver OUT → ESP32 GPIO 34</li>
+          </ul>
+        </li>
+        <li>For multiple receivers, additional pins (e.g., GPIO 35, 36, 39) can be used.</li>
+        <li>Mount the IR receiver(s) ensuring a clear line of sight to the target drone.</li>
+      </ol>
+      <h4 class="text-lg font-bold mt-4">ESP32 to Flight Controller Connection:</h4>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>Connect the ESP32 similarly as for the target drone.</li>
+        <li>Ensure a stable power supply (using a separate BEC if needed).</li>
+      </ol>
+    </section>
+    
+    <!-- Software Installation -->
+    <section id="software-installation" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Software Installation</h2>
+      <h3 class="text-xl font-bold mt-4">ESP32 Programming:</h3>
+      <h4 class="text-lg font-bold mt-2">Target Drone ESP32:</h4>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>
+          Install the Arduino IDE and ESP32 board support (follow the <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html" target="_blank" class="text-blue-400 hover:underline">official guide</a>).
+        </li>
+        <li>
+          Install required libraries:
+          <ul class="list-disc ml-6">
+            <li>ESP-NOW library (included in ESP32 board package)</li>
+            <li>MAVLink library</li>
+          </ul>
+        </li>
+        <li>Upload the IR LED control system code using the Arduino IDE.</li>
+      </ol>
+      <h4 class="text-lg font-bold mt-2">Landing Drone ESP32:</h4>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>Install the Arduino IDE and ESP32 board support (if not already installed).</li>
+        <li>
+          Install required libraries:
+          <ul class="list-disc ml-6">
+            <li>ESP-NOW library</li>
+            <li>MAVLink library</li>
+            <li>Kalman filter library (if required)</li>
+          </ul>
+        </li>
+        <li>Upload the position processing code using the Arduino IDE.</li>
+      </ol>
+      <h3 class="text-xl font-bold mt-4">Flight Controller Setup:</h3>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>Install Mission Planner or QGroundControl.</li>
+        <li>
+          Connect to the flight controller and configure:
+          <ul class="list-disc ml-6">
+            <li>Set SERIAL2_PROTOCOL to 2 (MAVLink2).</li>
+            <li>Set SERIAL2_BAUD to 115 (115200 baud).</li>
+            <li>Disable hardware flow control (BRD_SER2_RTSCTS = 0).</li>
+          </ul>
+        </li>
+        <li>
+          For the landing drone, additionally:
+          <ul class="list-disc ml-6">
+            <li>Enable Lua scripting (SCR_ENABLE = 1).</li>
+            <li>Set Lua script heap size (SCR_HEAP_SIZE = 100000 or higher).</li>
+            <li>Install the Lua script in the APM/scripts directory on the SD card and reboot the flight controller.</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+    
+    <!-- Configuration -->
+    <section id="configuration" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Configuration</h2>
+      <h3 class="text-xl font-bold mt-4">ESP-NOW Configuration:</h3>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>Determine the MAC addresses of both ESP32 boards using a sketch that prints the MAC address.</li>
+        <li>Update the MAC addresses in the respective ESP32 code files.</li>
+      </ol>
+      <h3 class="text-xl font-bold mt-4">PD Controller Tuning:</h3>
+      <p class="mb-4">
+        The PD controller parameters in the Lua script may require tuning. Start with conservative values and adjust for optimal performance.
+      </p>
+      <ul class="list-disc ml-6 mb-4">
+        <li>Increase proportional gains for faster response.</li>
+        <li>Increase derivative gains to minimize oscillation.</li>
+        <li>Adjust the scale factor for smoother transitions.</li>
+      </ul>
+    </section>
+    
+    <!-- Testing Procedures -->
+    <section id="testing-procedures" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Testing Procedures</h2>
+      <h3 class="text-xl font-bold mt-4">Component Testing:</h3>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>
+          IR LED Testing:
+          <ul class="list-disc ml-6">
+            <li>Verify IR LED emissions with a smartphone camera and, if available, an oscilloscope.</li>
+          </ul>
+        </li>
+        <li>
+          IR Receiver Testing:
+          <ul class="list-disc ml-6">
+            <li>Use the Serial Monitor in the Arduino IDE to verify signal detection.</li>
+          </ul>
+        </li>
+        <li>
+          ESP-NOW Communication Testing:
+          <ul class="list-disc ml-6">
+            <li>Ensure both ESP32 boards communicate effectively via ESPNOW.</li>
+          </ul>
+        </li>
+      </ol>
+      <h3 class="text-xl font-bold mt-4">System Integration Testing:</h3>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>
+          Static Testing:
+          <ul class="list-disc ml-6">
+            <li>Test the docking process with the target drone stationary while monitoring position data.</li>
+          </ul>
+        </li>
+        <li>
+          Flight Testing:
+          <ul class="list-disc ml-6">
+            <li>Conduct docking tests with drones in motion and be prepared for manual override if needed.</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+    
+    <!-- Troubleshooting -->
+    <section id="troubleshooting" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Troubleshooting</h2>
+      <ul class="list-disc ml-6 mb-4">
+        <li><strong>IR Detection Issues:</strong> Verify connections, reduce ambient interference, and adjust detection thresholds.</li>
+        <li><strong>Position Calculation Errors:</strong> Adjust Kalman filter parameters and verify LED pattern recognition.</li>
+        <li><strong>Communication Failures:</strong> Confirm MAC addresses, check UART connections, and verify flight controller settings.</li>
+        <li><strong>Docking Control Problems:</strong> Reduce PD controller gains, adjust scale factors, and ensure the flight controller is in GUIDED mode.</li>
+      </ul>
+    </section>
+    
+    <!-- Performance Optimization -->
+    <section id="performance-optimization" class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Performance Optimization</h2>
+      <ol class="list-decimal ml-6 mb-4">
+        <li>
+          <strong>Range Optimization:</strong>
+          <ul class="list-disc ml-6">
+            <li>Use high-power IR LEDs with proper current and focusing lenses.</li>
+            <li>Implement multiple IR receivers with varied viewing angles.</li>
+            <li>Optimize the IR pattern recognition algorithm.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Accuracy Optimization:</strong>
+          <ul class="list-disc ml-6">
+            <li>Fine-tune Kalman filter parameters and apply additional noise reduction.</li>
+            <li>Increase the number of IR LEDs for better position resolution.</li>
+            <li>Regularly calibrate the system.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Reliability Optimization:</strong>
+          <ul class="list-disc ml-6">
+            <li>Implement failsafe mechanisms and redundancy in critical components.</li>
+            <li>Develop comprehensive error handling and data validation.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Power Optimization:</strong>
+          <ul class="list-disc ml-6">
+            <li>Use efficient transistor drivers and implement power management in code.</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+    
+    <!-- Conclusion -->
+    <section class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Conclusion</h2>
+      <p>
+        This guide provides comprehensive instructions for implementing the autonomous drone-to-drone docking system.
+        By following the outlined procedures for hardware setup, software installation, configuration, and testing, you can build and optimize the system effectively.
+        Begin with conservative parameters and refine the system as needed based on real-world performance.
+      </p>
+    </section>
+    
     <a href="index.html" class="btn mt-6 inline-block">← Back to Home</a>
   </main>
   
